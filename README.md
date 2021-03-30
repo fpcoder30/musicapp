@@ -9,7 +9,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 ## FUNZIONALITÀ
 
-* Ricerca di uno spartito con accordi (es...)
+* Ricerca di uno spartito con accordi ([ESEMPIO](https://www.testoeaccordi.it/testieaccordi/oasis/wonderwall.html))
 * Recensione di uno spartito (mi piace/non mi piace/commento)
 * Salvataggio di uno spartito nei propri preferiti
 * Download di uno spartito per renderlo accessibile anche offline
