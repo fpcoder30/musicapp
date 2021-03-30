@@ -1,6 +1,6 @@
 # MUSICAPP
 
-One Paragraph of project description goes here
+L'idea è quella di creare un applicazione android, utilizzando il framework Flutter per il frontend, che permetta, ad un utente registrato, di usufruire di alcuni servizi utili ad un musicista, come la ricerca di spartiti con accordi, l'utilizzo del metronomo e dell'accordatore .
 
 ## Getting Started
 
