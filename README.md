@@ -7,8 +7,12 @@ L'idea è quella di creare un applicazione android, utilizzando il framework Flu
 These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
 
 
-## Acknowledgments
+## FUNZIONALITÀ
 
-* Hat tip to anyone whose code was used
-* Inspiration
-* etc
+* Ricerca di uno spartito con accordi (es...)
+* Recensione di uno spartito (mi piace/non mi piace/commento)
+* Salvataggio di uno spartito nei propri preferiti
+* Download di uno spartito per renderlo accessibile anche offline
+* Visione degli spartiti preferiti dagli altri utenti
+* Metronomo
+* Accordatore (riconoscitore di frequenze)
