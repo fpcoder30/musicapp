@@ -1,4 +1,4 @@
-# MUSICAPP
+# EGDA
 
 L'idea è quella di creare un sito internet, utilizzando javascript per il frontend, che permetta, ad un utente registrato, di usufruire di alcuni servizi utili ad un musicista, come la ricerca di spartiti con accordi e l'utilizzo del metronomo.
 
