@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+
+    <title>EGDA-artist</title>
+
+    <style>
+        #richieste {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #richieste > div{
+            border-radius: .1em;
+            background-color: rgb(245, 245, 245);
+            font-size: 1.3em;
+            padding: .6em;
+            margin: .3em;
+        }
+
+        main {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #link {
+            background-color: rgb(245, 245, 245);
+            font-weight: bold;
+            padding: .1em;
+        }
+
+        header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    </style>
+
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="logo" id='logo' style="height:100px">
+        <h1 id="titolo_principale">Pagina Artista</h1>
+        <a href="user.php?logout=true" id="login-link" class="only-if-logged-in">Esci</a>
+    </header>
+
+    <!--DISPLAY SOLO SE NON LOGGATO-->   
+    <p class="only-if-not-logged-in" style="display:none">Non sei collegato come artista. 
+        Vuoi <a href="login.html">fare il login</a> oppure <a href="signup.html">registrarti</a>?</p>
+
+
+    <!--DISPLAY SOLO SE LOGGATO-->    
+    <p class="only-if-logged-in">Link da condividere: <span id="link"></span>  <button onClick="copyLink()">Copia</button></p>
+    <h3 id="titolo-corrente" class="only-if-logged-in"></h3>
+    <div id="area-testo" class="only-if-logged-in">
+        <pre id="testo-canzone"></pre>
+    </div>
+    <h3 class="only-if-logged-in">Richieste:</h3>
+    <div id="richieste" class="only-if-logged-in"></div>
+
+    <!--IMMAGINE CARICAMENTO-->
+    <img src="https://www.bluechipexterminating.com/wp-content/uploads/2020/02/loading-gif-png-5.gif" alt="loading" id='loading' style="display:none;width:30px;height:30px;">
+</body>
+<script>
+    
+    const divRichieste = document.getElementById('richieste');
+    const titoloCorrente = document.getElementById('titolo-corrente');
+    const testoCanzone = document.getElementById('testo-canzone');
+    let idUtente = 0;
+    let shareUrl = '';
+
+    function getRichieste() {
+
+        fetch(`richieste.php?id_suonatore=${idUtente}`) //fetch richieste per questo utente (tramite id)
+        .then(res => res.json()) //parso in json la risposta
+        .then(res => {
+            
+            if(res.length == 0){ //se non ci sono richieste
+
+                titoloCorrente.innerText = "Nessuna richiesta selezionata";
+                testoCanzone.innerText = "...";
+                divRichieste.innerHTML = '';
+
+            }
+            else{
+
+                divRichieste.innerHTML = '';
+
+                for (const richiesta of res) { //per ogni richiesta nell'array di richieste
+
+                    //creo elementi per la richiesta singola
+                    let elem = document.createElement('div');
+                    let link = document.createElement('a');
+                    let deleteLink = document.createElement('a');
+                    
+                    link.innerText = richiesta.artista + " - " + richiesta.titolo;
+
+                    //on click display accordi
+                    link.addEventListener('click', () => {
+                        getAccordi(richiesta.id_canzone); //passo id per display accordi
+                    })
+
+                    //appendo a div richiesta singola
+                    elem.appendChild(link); 
+                    
+                    deleteLink.innerText = 'x';
+                    deleteLink.style.color = 'var(--nc-tx-2)';
+                    deleteLink.style.paddingLeft = '1em';
+
+                    //on click cancella richiesta in coda
+                    deleteLink.addEventListener('click', () => {
+                        deleteRichiesta(richiesta.id_canzone); //passo id per cancellarla
+                    })
+                    elem.appendChild(deleteLink);
+
+                    //appendo a div richieste totali
+                    divRichieste.appendChild(elem); 
+
+                }
+            }
+        })
+
+    }
+
+    function getAccordi(id_canzone) { 
+
+        //chiamo funzione in "canzoni.php" -> mi restituisce tutto sulla canzone in base al titolo
+
+        document.querySelector('#loading').style.display = 'block';
+        fetch(`canzoni.php?id_canzone=${id_canzone}`)
+        .then(res => res.json())
+        .then(res => {
+
+            document.querySelector('#loading').style.display = 'none';
+            titoloCorrente.innerText = `${res.artista} - ${res.titolo}`;
+            testoCanzone.innerText = res.accordi;
+
+        })
+
+    }
+
+    function getShareLink() {
+
+        fetch('get_user_id.php', { credentials: 'same-origin' })
+        .then(res => {
+            if (!response.ok) throw Error('poopoo')
+            else { return res.json() }
+        })
+        .then(res => {
+            const userId = res;
+            idUtente = userId;
+            shareUrl = `pacefabio.altervista.org/esame/utente.html?artista=${userId}`
+            document.getElementById('link').innerText = shareUrl;
+        })
+        .catch(err => console.log('peepee'))
+    }
+
+    function deleteRichiesta(id_canzone) {
+
+        document.querySelector('#loading').style.display = 'block';
+
+        
+        fetch(`richieste.php?id_suonatore=${idUtente}&id_canzone=${id_canzone}`, {
+
+            method: 'DELETE',
+            credentials: 'same-origin'
+
+        }).then(res => {
+            
+            document.querySelector('#loading').style.display = 'none';
+            console.log("eliminato");
+
+        })
+
+    }
+
+    function checkIfLoggedIn() {
+
+        fetch('get_user_id.php', { credentials: 'same-origin' })
+        .then(res => {
+
+            console.log(res);
+
+            if (res.ok) {
+
+                res.json()
+                .then(res => {
+                    document.getElementById("titolo_principale").innerText = "Pagina artista";
+                    console.log(res);
+                    idUtente = res;
+                    setInterval(getRichieste, 1000); //se loggato inizio a controllare la presenza di richieste ogni secondo
+                    
+                    //default testo accordi
+                    titoloCorrente.innerText = "Nessuna richiesta selezionata";
+                    testoCanzone.innerText = "...";
+
+                    idUtente = res;
+                    shareUrl = `pacefabio.altervista.org/esame/utente.html?artista=${res}`;
+                    document.getElementById('link').innerText = shareUrl;
+
+                })
+            } else {
+                
+                const cosePrivate = document.querySelectorAll('.only-if-logged-in');
+                cosePrivate.forEach(elem => elem.style.display = 'none');
+        
+                const cosePubbliche = document.querySelector('.only-if-not-logged-in');
+                cosePubbliche.style.display = 'block';
+
+                document.getElementById("titolo_principale").innerText = "Disconnesso";
+            }
+
+        })
+        .catch(err => {
+
+            console.log(err);
+
+        })
+
+    }
+
+    function copyLink() {
+
+        navigator.clipboard.writeText(shareUrl);
+
+    }
+
+    checkIfLoggedIn();
+    
+</script>
+</html>

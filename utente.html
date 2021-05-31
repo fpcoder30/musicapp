@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://fonts.xz.style/serve/inter.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@exampledev/new.css@1.1.2/new.min.css">
+
+    <title>EGDA-guest</title>
+
+    <style>
+        #richieste {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #richieste > div{
+            border-radius: .1em;
+            background-color: rgb(245, 245, 245);
+            font-size: 1.3em;
+            padding: .6em;
+            margin: .3em;
+        }
+
+        header {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="logo" id='logo' style="height:100px">
+        <h1>Richiedi canzoni</h1>
+        <p>Vuoi suonare?<br><a href="login.html" id="login-link">Accedi</a><br><a href="signup.html" id="login-link">Iscriviti</a></p>
+    </header>
+    <form id="form">
+        <label for="internazionale">Internazionali: </label>
+        <input type="checkbox" id="internazionale">
+        <br><br>
+        <label for="artista">Elenco artisti: </label>
+        <input type="hidden" name="suonatore" id="form-suonatore"> <!--suonatore a cui richiedere la canzone-->
+        <select name="artista" id="artisti-canzoni">
+            <option value="Caricamento artisti...">Caricamento artisti...</option>
+        </select>
+        <br><br>
+        <label for="id_canzone">Titolo canzone: </label>
+        <select name="id_canzone" id="titoli-canzoni">
+            <option value="Caricamento titoli...">Caricamento titoli...</option>
+        </select>
+    </form>
+    <button onclick="richiediCanzone()">Richiedi</button>
+
+    <h3 class="only-if-logged-in" id = "conta-richieste">Richieste effettuate: 0/3</h3>
+    <div id="richieste"></div>
+</body>
+<script>
+
+    var canzoni_richieste = 0;
+
+    const divRichieste = document.getElementById('richieste');
+    const formRichieste = document.getElementById('form');
+    const selectTitoli = document.getElementById('titoli-canzoni');
+    const selectArtisti = document.getElementById('artisti-canzoni');
+    const checkBoxInternazionale = document.getElementById('internazionale');
+
+    const urlPagina = window.location.search;
+    const urlParametri = new URLSearchParams(urlPagina);
+    const idUtente = urlParametri.get("artista");
+
+    selectArtisti.onchange = function(){
+        getCanzoni(selectArtisti.value);
+    }
+
+    checkBoxInternazionale.onchange = function(){
+
+        if(checkBoxInternazionale.checked == true){
+            aggiornaArtisti(1);
+            getCanzoni("geldof bob");
+        }
+        else{
+            aggiornaArtisti(0);
+            getCanzoni("99 posse");
+        }
+
+        
+    }
+
+    function getRichieste() {
+        fetch(`richieste.php?id_suonatore=${idUtente}`)
+        .then(res => res.json())
+        .then(res => {
+            divRichieste.innerHTML = '';
+            for (const richiesta of res) {
+                let elem = document.createElement('div');
+                elem.innerText = richiesta.artista + " - " + richiesta.titolo;
+                divRichieste.appendChild(elem);
+            }
+        })
+    }
+
+    function richiediCanzone(event) {
+
+
+
+        if(canzoni_richieste < 3){
+
+            document.querySelector('#form-suonatore').value = idUtente;
+            fetch('richieste.php', {
+                method: 'POST',
+                body: new FormData(formRichieste)
+            })
+            canzoni_richieste++;
+            document.getElementById("conta-richieste").innerText = "Richieste effettuate: " + canzoni_richieste + "/3";
+        }
+        else{
+            document.getElementById("conta-richieste").innerText = "Hai già richiesto 3 canzoni";
+        }
+    }
+
+    function getCanzoni(artista) {
+
+        fetch('canzoni.php?artista=' + artista)
+        .then(res => res.json())
+        .then(res => {
+            selectTitoli.innerHTML = '';
+            res.forEach(canzone => {
+                let elem = document.createElement('option');
+                elem.innerText = canzone.titolo;
+                elem.value = canzone.id_canzone;
+                selectTitoli.appendChild(elem);
+            })
+        })
+    }
+
+    function getArtisti(internazionale){
+        fetch('artisti.php')
+        .then(res => res.json())
+        .then(res => {
+
+            selectArtisti.innerHTML = '';
+
+            res.forEach(artista => {
+
+                let elem = document.createElement('option');
+                elem.innerText = artista.nome;
+                elem.value = artista.nome;
+                selectArtisti.appendChild(elem);
+                console.log(artista.internazionale);
+                
+            })
+        })
+
+    }
+
+    function aggiornaArtisti(internazionale){
+        fetch('artisti.php?internazionale=' + internazionale)
+        .then(res => res.json())
+        .then(res => {
+
+            selectArtisti.innerHTML = '';
+
+            res.forEach(artista => {
+
+                let elem = document.createElement('option');
+                elem.innerText = artista.nome;
+                elem.value = artista.nome;
+                selectArtisti.appendChild(elem);
+                console.log(artista.internazionale);
+                
+            })
+        })
+
+    }
+
+    setInterval(getRichieste, 1000);
+    getArtisti();
+    
+</script>
+</html>
